@@ -49,7 +49,8 @@ impl<'a> Parser<'a> {
                 // JSON doesn't allow trailing commas
                 if self.tokens[self.index].token_type == TokenType::RightBrace {
                     return Err(Error::UnexpectedToken(format!(
-                        "Unexpected comma at line {}, column {}", token.line, token.column
+                        "Unexpected comma at line {}, column {}",
+                        token.line, token.column
                     )));
                 }
             } else if token.token_type == TokenType::RightBracket {
@@ -112,7 +113,8 @@ impl<'a> Parser<'a> {
                 // JSON doesn't allow trailing commas
                 if self.tokens[self.index].token_type == TokenType::RightBrace {
                     return Err(Error::UnexpectedToken(format!(
-                        "Unexpected comma at line {}, column {}", token.line, token.column
+                        "Unexpected comma at line {}, column {}",
+                        token.line, token.column
                     )));
                 }
             } else if token.token_type == TokenType::RightBrace {
@@ -149,3 +151,90 @@ impl<'a> Parser<'a> {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::lexer::Lexer;
+
+    fn parse(input: &str) -> Result<JsonValue, Error> {
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex()?;
+        let mut parser = Parser::new(&tokens);
+        parser.parse()
+    }
+
+    #[test]
+    fn empty_string_is_invalid() {
+        let input = "";
+        let result = parse(input);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn empty_object_is_valid() {
+        let input = "{}";
+        let result = parse(input);
+        assert!(result.is_ok());
+    }
+    #[test]
+    fn empty_array_is_valid() {
+        let input = "[]";
+        let result = parse(input);
+        assert!(result.is_ok());
+    }
+    #[test]
+    fn invalid_key() {
+        let input = r#"{key: "value"}"#;
+        let result = parse(input);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn invalid_boolean() {
+        let input = r#"{"key": True}"#;
+        let result = parse(input);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn invalid_null() {
+        let input = r#"{"key": Null}"#;
+        let result = parse(input);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn trailing_comma_is_invalid() {
+        let input = r#"{
+            "key": "value",
+            "int": 42,
+            "float": 3.14,
+            "bool_true": true,
+            "bool_false": false,
+            "null_type": null,
+            "empty_array": [],
+            "array": ["one", "two"],
+            "empty_object": {},
+            "object": {
+                "int": 42
+            },
+        }"#;
+        let result = parse(input);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn json_is_valid() {
+        let input = r#"{
+            "key": "value",
+            "int": 42,
+            "float": 3.14,
+            "bool_true": true,
+            "bool_false": false,
+            "null_type": null,
+            "empty_array": [],
+            "array": ["one", "two"],
+            "empty_object": {},
+            "object": {
+                "int": 42
+            }
+        }"#;
+        let result = parse(input);
+        assert!(result.is_ok());
+    }
+}
