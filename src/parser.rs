@@ -153,15 +153,7 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::lexer::Lexer;
-
-    fn parse(input: &str) -> Result<JsonValue, Error> {
-        let mut lexer = Lexer::from(input);
-        let tokens = lexer.lex()?;
-        let mut parser = Parser::new(&tokens);
-        parser.parse()
-    }
+    use crate::parse;
 
     #[test]
     fn empty_string_is_invalid() {

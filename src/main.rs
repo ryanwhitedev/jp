@@ -1,4 +1,4 @@
-use jp::{lexer::Lexer, parser::Parser};
+use jp::parse;
 
 fn main() {
     let json = r#"{
@@ -16,21 +16,8 @@ fn main() {
         }
     }"#;
 
-    let mut lexer = Lexer::from(json);
-    let tokens = match lexer.lex() {
-        Ok(tokens) => tokens,
-        Err(e) => {
-            eprintln!("Invalid JSON: {}", e);
-            std::process::exit(1);
-        }
-    };
-    let mut parser = Parser::new(&tokens);
-    let json = match parser.parse() {
-        Ok(data) => data,
-        Err(e) => {
-            eprintln!("Invalid JSON: {}", e);
-            std::process::exit(1);
-        }
-    };
-    dbg!(&json);
+    match parse(&json) {
+        Ok(_) => println!("Valid JSON."),
+        Err(e) => eprintln!("Invalid JSON: {}", e),
+    }
 }
