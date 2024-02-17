@@ -70,6 +70,7 @@ pub enum Error {
     UnexpectedEndOfObject,
     UnexpectedEndOfInput,
     UnexpectedCharacter(char, (usize, usize)),
+    UnexpectedToken(String),
     ParseNumberError(String),
 }
 
@@ -85,6 +86,7 @@ impl fmt::Display for Error {
                 "Unexpected character: {}, line {} column {}",
                 char, line, col
             ),
+            Self::UnexpectedToken(err) => write!(f, "{}", err),
             Self::ParseNumberError(err) => write!(f, "{}", err),
         }
     }

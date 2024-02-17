@@ -1,4 +1,4 @@
-use jp::lexer::Lexer;
+use jp::{lexer::Lexer, parser::Parser};
 
 fn main() {
     let json = r#"{
@@ -24,5 +24,13 @@ fn main() {
             std::process::exit(1);
         }
     };
-    dbg!(tokens);
+    let mut parser = Parser::new(&tokens);
+    let json = match parser.parse() {
+        Ok(data) => data,
+        Err(e) => {
+            eprintln!("Invalid JSON: {}", e);
+            std::process::exit(1);
+        }
+    };
+    dbg!(&json);
 }
