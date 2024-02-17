@@ -83,7 +83,9 @@ impl<'a> Lexer<'a> {
 
     fn lex_number(&mut self) -> Result<Token, Error> {
         let start_column = self.column;
-        let numeric_chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', 'e', 'E'];
+        let numeric_chars = [
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', 'e', 'E',
+        ];
 
         let chars = self
             .source
@@ -197,3 +199,321 @@ impl<'a> Lexer<'a> {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lex_empty_string() {
+        let input = "";
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex();
+        assert!(tokens.is_ok());
+        assert!(tokens.unwrap().is_empty());
+    }
+    #[test]
+    fn lex_empty_object() {
+        let input = "{}";
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex();
+        assert!(tokens.is_ok());
+
+        let expected = vec![
+            Token {
+                token_type: TokenType::LeftBrace,
+                value: None,
+                line: 0,
+                column: 0,
+            },
+            Token {
+                token_type: TokenType::RightBrace,
+                value: None,
+                line: 0,
+                column: 1,
+            },
+        ];
+        assert_eq!(expected, tokens.unwrap());
+    }
+    #[test]
+    fn lex_string_key_value_pair() {
+        let input = r#"{"key":"value"}"#;
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex();
+        assert!(tokens.is_ok());
+
+        let expected = vec![
+            Token {
+                token_type: TokenType::LeftBrace,
+                value: None,
+                line: 0,
+                column: 0,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("key".to_string())),
+                line: 0,
+                column: 1,
+            },
+            Token {
+                token_type: TokenType::Colon,
+                value: None,
+                line: 0,
+                column: 6,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("value".to_string())),
+                line: 0,
+                column: 7,
+            },
+            Token {
+                token_type: TokenType::RightBrace,
+                value: None,
+                line: 0,
+                column: 14,
+            },
+        ];
+        assert_eq!(expected, tokens.unwrap());
+    }
+    #[test]
+    fn lex_numeric_key_value_pair() {
+        let input = r#"{"key":3.14}"#;
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex();
+        assert!(tokens.is_ok());
+
+        let expected = vec![
+            Token {
+                token_type: TokenType::LeftBrace,
+                value: None,
+                line: 0,
+                column: 0,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("key".to_string())),
+                line: 0,
+                column: 1,
+            },
+            Token {
+                token_type: TokenType::Colon,
+                value: None,
+                line: 0,
+                column: 6,
+            },
+            Token {
+                token_type: TokenType::Number,
+                value: Some(JsonValue::Number(3.14)),
+                line: 0,
+                column: 7,
+            },
+            Token {
+                token_type: TokenType::RightBrace,
+                value: None,
+                line: 0,
+                column: 11,
+            },
+        ];
+        assert_eq!(expected, tokens.unwrap());
+    }
+    #[test]
+    fn lex_boolean_key_value_pair() {
+        let input = r#"{"key":true}"#;
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex();
+        assert!(tokens.is_ok());
+
+        let expected = vec![
+            Token {
+                token_type: TokenType::LeftBrace,
+                value: None,
+                line: 0,
+                column: 0,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("key".to_string())),
+                line: 0,
+                column: 1,
+            },
+            Token {
+                token_type: TokenType::Colon,
+                value: None,
+                line: 0,
+                column: 6,
+            },
+            Token {
+                token_type: TokenType::Bool,
+                value: Some(JsonValue::Bool(true)),
+                line: 0,
+                column: 7,
+            },
+            Token {
+                token_type: TokenType::RightBrace,
+                value: None,
+                line: 0,
+                column: 11,
+            },
+        ];
+        assert_eq!(expected, tokens.unwrap());
+    }
+    #[test]
+    fn lex_null_key_value_pair() {
+        let input = r#"{"key":null}"#;
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex();
+        assert!(tokens.is_ok());
+
+        let expected = vec![
+            Token {
+                token_type: TokenType::LeftBrace,
+                value: None,
+                line: 0,
+                column: 0,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("key".to_string())),
+                line: 0,
+                column: 1,
+            },
+            Token {
+                token_type: TokenType::Colon,
+                value: None,
+                line: 0,
+                column: 6,
+            },
+            Token {
+                token_type: TokenType::Null,
+                value: Some(JsonValue::Null),
+                line: 0,
+                column: 7,
+            },
+            Token {
+                token_type: TokenType::RightBrace,
+                value: None,
+                line: 0,
+                column: 11,
+            },
+        ];
+        assert_eq!(expected, tokens.unwrap());
+    }
+    #[test]
+    fn lex_array() {
+        let input = r#"{"obj":["value"]}"#;
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex();
+        assert!(tokens.is_ok());
+
+        let expected = vec![
+            Token {
+                token_type: TokenType::LeftBrace,
+                value: None,
+                line: 0,
+                column: 0,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("obj".to_string())),
+                line: 0,
+                column: 1,
+            },
+            Token {
+                token_type: TokenType::Colon,
+                value: None,
+                line: 0,
+                column: 6,
+            },
+            Token {
+                token_type: TokenType::LeftBracket,
+                value: None,
+                line: 0,
+                column: 7,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("value".to_string())),
+                line: 0,
+                column: 8,
+            },
+            Token {
+                token_type: TokenType::RightBracket,
+                value: None,
+                line: 0,
+                column: 15,
+            },
+            Token {
+                token_type: TokenType::RightBrace,
+                value: None,
+                line: 0,
+                column: 16,
+            },
+        ];
+        assert_eq!(expected, tokens.unwrap());
+    }
+    #[test]
+    fn lex_object() {
+        let input = r#"{"obj":{"key":"value"}}"#;
+        let mut lexer = Lexer::from(input);
+        let tokens = lexer.lex();
+        assert!(tokens.is_ok());
+
+        let expected = vec![
+            Token {
+                token_type: TokenType::LeftBrace,
+                value: None,
+                line: 0,
+                column: 0,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("obj".to_string())),
+                line: 0,
+                column: 1,
+            },
+            Token {
+                token_type: TokenType::Colon,
+                value: None,
+                line: 0,
+                column: 6,
+            },
+            Token {
+                token_type: TokenType::LeftBrace,
+                value: None,
+                line: 0,
+                column: 7,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("key".to_string())),
+                line: 0,
+                column: 8,
+            },
+            Token {
+                token_type: TokenType::Colon,
+                value: None,
+                line: 0,
+                column: 13,
+            },
+            Token {
+                token_type: TokenType::String,
+                value: Some(JsonValue::String("value".to_string())),
+                line: 0,
+                column: 14,
+            },
+            Token {
+                token_type: TokenType::RightBrace,
+                value: None,
+                line: 0,
+                column: 21,
+            },
+            Token {
+                token_type: TokenType::RightBrace,
+                value: None,
+                line: 0,
+                column: 22,
+            },
+        ];
+        assert_eq!(expected, tokens.unwrap());
+    }
+}

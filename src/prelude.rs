@@ -5,4 +5,3 @@ pub const JSON_LEFTBRACKET: char = '[';
 pub const JSON_RIGHTBRACKET: char = ']';
 pub const JSON_LEFTBRACE: char = '{';
 pub const JSON_RIGHTBRACE: char = '}';
-

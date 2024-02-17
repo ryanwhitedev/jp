@@ -22,7 +22,7 @@ fn main() {
         Err(e) => {
             eprintln!("Invalid JSON: {}", e);
             std::process::exit(1);
-        },
+        }
     };
     dbg!(tokens);
 }

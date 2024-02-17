@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum JsonValue {
     Null,
     Bool(bool),
@@ -55,7 +55,7 @@ impl fmt::Display for TokenType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Token {
     pub token_type: TokenType,
     pub value: Option<JsonValue>,
@@ -103,4 +103,3 @@ impl From<std::num::ParseFloatError> for Error {
         Error::ParseNumberError(format!("Failed to parse float: {}", err))
     }
 }
-
