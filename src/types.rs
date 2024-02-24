@@ -71,7 +71,7 @@ pub enum Error {
     UnexpectedEndOfInput,
     UnexpectedCharacter(char, (usize, usize)),
     UnexpectedToken(String),
-    ParseNumberError(String),
+    ParseNumber(String),
 }
 
 impl fmt::Display for Error {
@@ -87,7 +87,7 @@ impl fmt::Display for Error {
                 char, line, col
             ),
             Self::UnexpectedToken(err) => write!(f, "{}", err),
-            Self::ParseNumberError(err) => write!(f, "{}", err),
+            Self::ParseNumber(err) => write!(f, "{}", err),
         }
     }
 }
@@ -96,12 +96,12 @@ impl std::error::Error for Error {}
 
 impl From<std::num::ParseIntError> for Error {
     fn from(err: std::num::ParseIntError) -> Self {
-        Error::ParseNumberError(format!("Failed to parse integer: {}", err))
+        Error::ParseNumber(format!("Failed to parse integer: {}", err))
     }
 }
 
 impl From<std::num::ParseFloatError> for Error {
     fn from(err: std::num::ParseFloatError) -> Self {
-        Error::ParseNumberError(format!("Failed to parse float: {}", err))
+        Error::ParseNumber(format!("Failed to parse float: {}", err))
     }
 }
