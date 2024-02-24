@@ -16,8 +16,7 @@ fn main() {
         }
     }"#;
 
-    match parse(&json) {
-        Ok(_) => println!("Valid JSON."),
-        Err(e) => eprintln!("Invalid JSON: {}", e),
+    if let Err(e) = parse(&json) {
+        eprintln!("Invalid JSON: {}", e);
     }
 }
